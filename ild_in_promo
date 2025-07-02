@@ -1,0 +1,43 @@
+WITH ild_in_promo AS
+(SELECT
+  day,
+  aaa.partner_id,
+  aaa.partner_name,
+  pc.sku,
+  pc.product_name,
+  incentive_type,
+  campaign_type,
+  ild.ILD_score_ranking,
+  AVG(CASE WHEN incentive_type = 'composite' THEN percentage_discount WHEN incentive_type = 'bxgy' THEN SAFE_DIVIDE ( percentage_discount, min_trigger_qty_product_discount ) END) as pct_discount,
+  AVG(CASE WHEN incentive_type = 'composite' THEN original_price_eur WHEN incentive_type = 'bxgy' THEN SAFE_DIVIDE ( original_price_eur, min_trigger_qty_product_discount ) END ) as avg_price
+FROM
+  `peya-bi-tools-pro.il_qcommerce.promo_tool_campaigns_v2` pc,
+UNNEST(GENERATE_DATE_ARRAY(date(start_timestamp),date(expire_timestamp))) day
+INNER JOIN
+  `peya-food-and-groceries.automated_tables_reports.partners_aaa_temporary` aaa
+ON
+  aaa.partner_id = pc.partner_id
+INNER JOIN
+  (SELECT * FROM `peya-food-and-groceries.automated_tables_reports.aaa_ILD_score` WHERE user_segment = 'ALL' AND gender_merged = 'ALL' and month = "2025-05-31") ild
+ON
+  ild.franchise = aaa.franchise AND ild.sku = pc.sku
+WHERE
+  pc.create_date between '2025-05-01' and "2025-05-31"
+AND
+  day>= DATE_SUB(CURRENT_DATE(),INTERVAL 6 WEEK)
+AND
+  aaa.franchise = 'Super Xtra-PA'
+GROUP BY
+  1,2,3,4,5,6,7,8)
+
+SELECT
+  * EXCEPT(day,partner_id,partner_name,pct_discount,avg_price),
+  COUNT(DISTINCT day) as distinct_days,
+  COUNT(DISTINCT partner_id) as distinct_partners,
+  ROUND(AVG(pct_discount),2) as avg_discount,
+  --AVG(avg_price) as avg_price
+FROM
+  ild_in_promo
+where ILD_score_ranking <= 20
+GROUP BY
+  ALL
