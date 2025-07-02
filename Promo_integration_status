@@ -1,0 +1,20 @@
+--create or replace table `peya-food-and-groceries.user_ignacio_anziano.AAA_promo_integration_status` as
+
+select distinct pr.franchise, dp.franchise.franchise_id, dp.franchise.franchise_name,
+CASE 
+  WHEN dp.franchise.franchise_name IN (
+    'Disco (Cencosud)-AR', 'Jumbo (Cencosud)-AR', 'Vea (Cencosud)-AR', 'AMarket-BO', 'Supercompro-CR', 'Perimercados-CR', 'Hipermercado Ole-DO', 'Santa María-EC', 'Coral Hipermercados-EC', 'Tía (Tiendas Industriales Asociadas)-EC', 'La Torre-GT', 'Mi Super Fresh-GT', 'Diprova-HN', 'Metro (Cencosud)-PE', 'Wong (Cencosud)-PE', 'Biggie express-PY', 'Gran Via-PY', 'Unicasa-VE', 'Central Madeirense-VE', 'Automercados Plaza-VE', 'Supermercado Dar-AR'
+  ) 
+  OR dp.franchise.franchise_id IN (
+    '001bO00000ERXW9QAP', '001bO00000ERXW8QAP', '001bO00000ERXW7QAP', '001690000350YBcAAM', '0016900002w3PYSAA2', '0016900002w3PPrAAM', '0016900002aDwwKAAS', '0016900002f9bMlAAI', '0016900002f7gZyAAI', '001bO00000ERXayQAH', '0016900002f9COxAAM', '0016900002uR7uhAAC', '0016900002uGd9XAAS', '001bO00000ERRX8QAP', '001bO00000ERRX9QAP', '001bO00000ER97LQAT', '0016900002dYypxAAC', '0016900002w3vOKAAY', '0016900002fAZOfAAO', '001bO000006UJjJQAW', '0011r00002VoI9AAAV'
+  ) 
+  THEN TRUE
+
+  when dp.franchise.franchise_name in ('Carrefour-AR', 'La Anónima-AR', 'Dia-AR', 'Comodin-AR', 'Libertad-AR', 'Super El Abastecedor', 'Supermercados Fidalga-BO', 'Mixtura-BO', 'Fresh Market-CR', 'AM/PM-CR', 'Carrefour-DO', 'La Sirena-DO', 'Supermercado Puerta del Sol-GT', 'Supermercado La colonia-HN', 'Super Xtra-PA', 'Rey-PA', 'Tottus (Falabella)-PE', 'Supermercado Real-PY', 'Supermercado los jardines-PY', 'Ta-Ta-UY', 'Luvebras-VE') 
+    or dp.franchise.franchise_id in ('0011r00002VoIJ0AAN', '0011r00002XcDSFAA3', '001bO00000ERXWCQA5', '001bO00000ERXWAQA5', '0011r00002VoHgPAAV', '0016900002ncEiGAAU', '0011r00002XcCnIAAV', '001bO00000ERVsWQAX', '001bO00000ERXZQQA5', '001bO00000ERXZPQA5', '001bO000006U6cUQAS', '00169000030ZfPNAA0', '001bO00000BWifaQAD', '001bO00000ERW2FQAX', '0011r00002VoI1SAAV', '0016900002dYyUzAAK', '001bO00000ER97QQAT', '00169000030SXkxAAG', '0016900002kWsn1AAC', '00169000030SXvGAAW', '001bO00000ERWv1QAH') 
+  then FALSE
+end AS promo_integrated
+
+from`peya-food-and-groceries.automated_tables_reports.AAA_partner_reporting` pr
+left join `peya-bi-tools-pro.il_core.dim_partner` dp on dp.partner_id = pr.partner_id
+where dp.is_active is true and dp.is_online is true and period = "Monthly" 
